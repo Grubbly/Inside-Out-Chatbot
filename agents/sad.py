@@ -13,6 +13,8 @@ from sklearn.feature_extraction.text import TfidVectorizer
 # Used to find the similarity between user input and words in the corpora
 from sklearn.metrics.pairwise import cosine_similarity
 
+NAME = "Saddie"
+
 # ELIZA just uses keyword matching for greetings:
 USER_GREETINGS = ("hello", "hi", "greetings", "sup", "what's up", "hey", "heyo", "what up", "yo")
 AGENT_RESPONSES = ("hello, human", "hi", "oh.. hi there", "hello", "hi... I'm a little shy", "hello... I'm not very good at conversations")
@@ -62,4 +64,24 @@ def response(userText):
     else:
         agentResponse = agentResponse + corpusSentences[corpusSentencesIndex]
         return agentResponse
+        
+
+chatting = True
+print(NAME + ": My name is " + NAME + " The Sadbot. I'm an expert in sadness :(")
+print("If you want to leave, type 'bye'")
+
+while(chatting):
+    userInput = input()
+    userInput = userInput.lower()
+
+    if(userInput != "bye"):
+        if(greeting(userInput) != None):
+            print(NAME + ": " + greeting(userInput))
+        else:
+            print(NAME + ": ", end="")
+            print(response(userInput))
+            corpusSentences.remove(userInput)
+    else:
+        chatting = False
+        print(NAME + ": Goodbye :(")
         
