@@ -42,5 +42,24 @@ def greeting(userText):
         if word.lower() in USER_GREETINGS:
             return random.choice(AGENT_RESPONSES)
 
+def response(userText):
+    agentResponse=''
+    corpusSentences.append(userText)
+    
+    # Stop words are words that do not contribute to the understanding of text
+    # Here, we are using a predefined list of such words.
+    TfidfVector = TfidVectorizer(tokenizer=normalize, stop_words='english')
+    termFrequencies = TfidfVector.fit_transform(corpusSentences)
+    similarities = cosine_similarity(termFrequencies[-1], termFrequencies)
+    corpusSentencesIndex = similarities.argsort()[0][-2]
+    flat = similarities.flatten()
+    flat.sort()
+    resultantTermFrequency = flat[-2]
 
-
+    if(resultantTermFrequency == 0):
+        agentResponse = agentResponse + "Sorry.. I don't know what to say :("
+        return agentResponse
+    else:
+        agentResponse = agentResponse + corpusSentences[corpusSentencesIndex]
+        return agentResponse
+        
