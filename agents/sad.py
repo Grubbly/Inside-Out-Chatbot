@@ -7,7 +7,7 @@ import string
 # This bag of words heuristic weighs word scores based on the total number of docs
 # over how many docs the word appears in, effectively discarding biases for popular
 # words like 'the'.  
-from sklearn.feature_extraction.text import TfidVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Cosine similarity
 # Used to find the similarity between user input and words in the corpora
@@ -50,7 +50,7 @@ def response(userText):
     
     # Stop words are words that do not contribute to the understanding of text
     # Here, we are using a predefined list of such words.
-    TfidfVector = TfidVectorizer(tokenizer=normalize, stop_words='english')
+    TfidfVector = TfidfVectorizer(tokenizer=normalize, stop_words='english')
     termFrequencies = TfidfVector.fit_transform(corpusSentences)
     similarities = cosine_similarity(termFrequencies[-1], termFrequencies)
     corpusSentencesIndex = similarities.argsort()[0][-2]
