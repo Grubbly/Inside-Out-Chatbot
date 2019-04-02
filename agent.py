@@ -80,14 +80,14 @@ class Agent:
     def normalize(self, text):
         return self.lemanizeTokens(nltk.word_tokenize(text.lower().translate(self.removePunctuation)))
 
-    def greeting(self, userText):
-        for word in userText.split():
+    def greeting(self, userInput):
+        for word in userInput.split():
             if word.lower() in USER_GREETINGS:
                 return random.choice(AGENT_RESPONSES)
 
-    def response(self, userText):
+    def response(self, userInput):
         agentResponse=''
-        self.corpusSentences.append(userText)
+        self.corpusSentences.append(userInput)
         
         # Stop words are words that do not contribute to the understanding of text
         # Here, we are using a predefined list of such words.
@@ -101,9 +101,11 @@ class Agent:
 
         if(resultantTermFrequency == 0):
             agentResponse = agentResponse + self.defaultMessage
+            self.corpusSentences.remove(userInput)
             return agentResponse
         else:
             agentResponse = agentResponse + self.corpusSentences[corpusSentencesIndex]
+            self.corpusSentences.remove(userInput)
             return agentResponse
 
     def sense(self):
@@ -111,18 +113,21 @@ class Agent:
         userInput = userInput.lower()
 
     def chatCLI(self):
-        chatting = True
-        while chatting:
+        while True:
             userInput = input("Chat: ")
             userInput = userInput.lower()
 
-            if(userInput != "bye"):
-                if(self.greeting(userInput) != None):
-                    print(self.name + ": " + self.greeting(userInput))
-                else:
-                    print(self.name + ": ", end="")
-                    print(self.response(userInput) + "\n")
-                    self.corpusSentences.remove(userInput)
+            print(self.chat(userInput))
+            
+            if(userInput == "bye"):
+                break
+
+    def chat(self, userInput):
+        if(userInput != "bye"):
+            if(self.greeting(userInput) != None):
+                return (self.name + ": " + self.greeting(userInput))
             else:
-                chatting = False
-                print(self.goodbyeMessage)
+                return (self.name + ": " + self.response(userInput) + "\n")
+        else:
+            return (self.goodbyeMessage)
+            
