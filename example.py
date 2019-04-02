@@ -9,3 +9,6 @@ sadAgent = Agent(
 )
 
 sadAgent.chatCLI()
+
+# testAgent = Agent()
+# testAgent.chatCLI()

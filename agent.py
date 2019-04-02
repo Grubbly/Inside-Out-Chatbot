@@ -1,4 +1,3 @@
-# ELIZA just uses keyword matching for greetings:
 import nltk
 import numpy as np
 import random
@@ -14,8 +13,18 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # Used to find the similarity between user input and words in the corpora
 from sklearn.metrics.pairwise import cosine_similarity
 
+# ELIZA just uses keyword matching for greetings:
 USER_GREETINGS = ("hello", "hi", "greetings", "sup", "what's up", "hey", "heyo", "what up", "yo")
 AGENT_RESPONSES = ("hello, human", "hi", "oh.. hi there", "hello", "hi... I'm a little shy", "hello... I'm not very good at conversations")
+
+# Percepts = user input
+# Environment = Corpus/GUI Input
+# Action = Return response string
+# Sensors = 
+#   * Get input from user (if running CLI version)
+#   * Recieve input from GUI through input field
+# Agent = Emotions: Happy, Disgust, Angry, Sad
+# Actuators = 
 
 class Agent:
     def __init__(
@@ -33,10 +42,10 @@ class Agent:
         
         if corpus is None:
             corpusFile = open('./corpora/default.txt', 'r', errors='ignore')
-            self.corpus = corpusFile.read().lower()
+            self.environment = corpusFile.read().lower()
         else:
             corpusFile = open('./corpora/'+corpus, 'r', errors='ignore')
-            self.corpus = corpusFile.read().lower()
+            self.environment = corpusFile.read().lower()
 
         if greetingMessage is None:
             self.greetingMessage = self.name + ": My name is " + self.name + " The Chatbot!\nIf you want to leave, type 'bye'"
@@ -56,8 +65,8 @@ class Agent:
         nltk.download('punkt')
         nltk.download('wordnet')
 
-        self.corpusSentences = nltk.sent_tokenize(self.corpus)
-        self.corpusWords = nltk.word_tokenize(self.corpus)
+        self.corpusSentencesActuator = nltk.sent_tokenize(self.environment)
+        self.corpusWordsActuator = nltk.word_tokenize(self.environment)
 
         # Tokenization and normalization handlers
         self.lemmer = nltk.stem.WordNetLemmatizer()
@@ -87,12 +96,12 @@ class Agent:
 
     def response(self, userInput):
         agentResponse=''
-        self.corpusSentences.append(userInput)
+        self.corpusSentencesActuator.append(userInput)
         
         # Stop words are words that do not contribute to the understanding of text
         # Here, we are using a predefined list of such words.
         TfidfVector = TfidfVectorizer(tokenizer=self.normalize, stop_words='english')
-        termFrequencies = TfidfVector.fit_transform(self.corpusSentences)
+        termFrequencies = TfidfVector.fit_transform(self.corpusSentencesActuator)
         similarities = cosine_similarity(termFrequencies[-1], termFrequencies)
         corpusSentencesIndex = similarities.argsort()[0][-2]
         flat = similarities.flatten()
@@ -101,33 +110,42 @@ class Agent:
 
         if(resultantTermFrequency == 0):
             agentResponse = agentResponse + self.defaultMessage
-            self.corpusSentences.remove(userInput)
+            self.corpusSentencesActuator.remove(userInput)
             return agentResponse
         else:
-            agentResponse = agentResponse + self.corpusSentences[corpusSentencesIndex]
-            self.corpusSentences.remove(userInput)
+            agentResponse = agentResponse + self.corpusSentencesActuator[corpusSentencesIndex]
+            self.corpusSentencesActuator.remove(userInput)
             return agentResponse
 
     def sense(self):
-        userInput = input()
-        userInput = userInput.lower()
+        userInputPercept = input()
+        userInputPercept = userInputPercept.lower()
+        return userInputPercept
+
+    def action(self, userInputPercept):
+        if(userInputPercept != "bye"):
+            if(self.greeting(userInputPercept) != None):
+                return (self.name + ": " + self.greeting(userInputPercept))
+            else:
+                return (self.name + ": " + self.response(userInputPercept) + "\n")
+        else:
+            return (self.goodbyeMessage) 
 
     def chatCLI(self):
         while True:
-            userInput = input("Chat: ")
-            userInput = userInput.lower()
+            userInputPercept = input("Chat: ")
+            userInputPercept = userInputPercept.lower()
 
-            print(self.chat(userInput))
+            print(self.action(userInputPercept))
             
-            if(userInput == "bye"):
+            if(userInputPercept == "bye"):
                 break
 
-    def chat(self, userInput):
-        if(userInput != "bye"):
-            if(self.greeting(userInput) != None):
-                return (self.name + ": " + self.greeting(userInput))
-            else:
-                return (self.name + ": " + self.response(userInput) + "\n")
-        else:
-            return (self.goodbyeMessage)
-            
+    # To be used with the GUI
+    #
+    # Note: sensing is performed on the GUI
+    #       through the input field if this
+    #       member function is being used.
+    #
+    def chat(self, userInputPercept):
+        self.action(userInputPercept)
